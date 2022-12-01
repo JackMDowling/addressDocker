@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  db:
+    image: jackmdowling/addressbook:db
+    container_name: address-postgres-db
+    ports:
+      - '5432:5432'
+    user: postgres
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: docker-postgres
+    build:
+      context: .
+      dockerfile: backend/databse/Dockerfile
+    volumes:
+      - .:/docker-entrypoint-initdb.d
+
+  react:
+    image: jackmdowling/addressbook:frontend
+    container_name: react-address
+    depends_on:
+      - flask
+    ports:
+      - 3000:3000
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    links:
+      - 'flask:server'
+
+  flask:
+    image: jackmdowling/addressbook:server
+    container_name: python-backend
+    depends_on:
+      - db
+    ports:
+      - 5000:5000
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    links:
+      - 'db:database'
